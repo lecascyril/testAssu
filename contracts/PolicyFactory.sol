@@ -13,7 +13,7 @@ contract PolicyFactory {
 
     constructor()  {}
 
-    function createPolicy(uint[] memory _policies, address[] memory _clients) external returns (address) {
+    function createPolicy(uint[] memory _actNumber, uint[] memory _policies, uint[] memory _clients) external returns (address) {
         require (insuranceCompany[msg.sender]==true);
         address policy;
 
@@ -22,8 +22,8 @@ contract PolicyFactory {
         assembly {
             policy := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
-        Policy(policy).initialyse(_policies, _clients, msg.sender);
+        Policy(policy).initialyse(_actNumber, _policies, _clients, msg.sender);
         emit PolicyCreated(policy, msg.sender);
         return policy;
     }
-}
+}  

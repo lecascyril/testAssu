@@ -11,25 +11,26 @@ contract Policy {
     bool initialiser;
     address INSURANCE_ADDRESS;
 
-    uint[] Policies;
-    // reimbursement per acts
-    // Policy[132] is the percentage of reimbursement of act code 132 for example
+    mapping(uint => uint) Policies;
+    // pourcentage de remboursement sur (base de remboursement - montant remboursé sécu)
 
-    mapping (address => bool) Clients;
+    mapping (uint => bool) Clients;
 
-    event PoliciesChanged(uint timestamp);
-    event ClientChanged(address client);
+    event PoliciesChanged(uint timestamp, uint actNumber);
+    event ClientChanged(uint client);
 
     constructor() {}
 
-    function initialyse (uint[] memory _policies, address[] memory _clients, address _insuranceCompany) public {
+    function initialyse (uint[] memory _actNumber, uint[] memory _policies, uint[] memory _clientsCode, address _insuranceCompany) public {
         require(initialiser == false, "already initialised");
         initialiser = true;
-        Policies = _policies;
+        for (uint j=0; j<_actNumber.length; j++){
+            Policies[_actNumber[j]]=_policies[j];
+        }
         INSURANCE_ADDRESS = _insuranceCompany;
 
-        for (uint i; i< _clients.length; ++i){
-            Clients[_clients[i]] = true;
+        for (uint i; i< _clientsCode.length; ++i){
+            Clients[_clientsCode[i]] = true;
         }
     }
 
@@ -38,27 +39,28 @@ contract Policy {
         _;
     }
 
-    function _modifyPolicies (uint[] memory _policies) onlyInsurance public {
-        Policies = _policies;
-        emit PoliciesChanged(block.timestamp);
+    function _modifyPolicies (uint _actNumber, uint _policy) onlyInsurance public {
+        Policies[_actNumber] = _policy;
+        emit PoliciesChanged(block.timestamp, _actNumber);
     }
 
-    function _addClient (address _addr ) public onlyInsurance{
-        require(Clients[_addr]==false, "already a client");
-        Clients[_addr]=true;
-        emit ClientChanged(_addr);
+    function _addClient (uint _secuCode ) public onlyInsurance{
+        require(Clients[_secuCode]==false, "already a client");
+        Clients[_secuCode]=true;
+        emit ClientChanged(_secuCode);
     }
 
-    function _removeClient (address _addr ) public onlyInsurance{
-        require(Clients[_addr]==true, "not a client");
-        Clients[_addr]=false;
-        emit ClientChanged(_addr);
+    function _removeClient (uint _clientsCode ) public onlyInsurance{
+        require(Clients[_clientsCode]==true, "not a client");
+        Clients[_clientsCode]=false;
+        emit ClientChanged(_clientsCode);
     }
 
-    function _getReimbursementValue(uint _price, uint _actNumber, address _client) public view returns (uint){
+    function _getReimbursementValue(uint _price, uint _BRMR, uint _actNumber, uint _client) public view returns (uint){
         require (Clients[_client]==true, "not a client");
         require(block.timestamp > StartContract && block.timestamp <= EndContract, "not in time");
-        return Policies[_actNumber]*_price;
+        uint value = _BRMR * Policies[_actNumber];
+        return value < _price? value: _price;
     }
 
 }
