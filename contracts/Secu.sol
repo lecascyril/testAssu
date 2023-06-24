@@ -64,7 +64,7 @@ contract Secu {
     }
 
     function reimburseBySecu(uint _price, uint _actNumber, uint _clientsCode, address _proAddress) private returns(uint){
-        uint value = PoliciesBySecu[_actNumber][0]*PoliciesBySecu[_actNumber][1];
+        uint value = PoliciesBySecu[_actNumber][0]*PoliciesBySecu[_actNumber][1]/100;
         if(_price < value){
             value = _price;
         }
@@ -77,6 +77,9 @@ contract Secu {
     function reimburseByMutuelle(uint _price, uint _BRMR, uint _reimburseSecu, uint _actNumber, uint _clientsCode, address _proAddress) private{
         address insuranceCompanyUser = insuranceCompanyForUSer[_clientsCode];
         Assu(insuranceCompanyUser).reimburseClient( _price, _BRMR, _reimburseSecu, _actNumber, _clientsCode, _proAddress);
+    }
+
+    function addSecuTreasury() public payable{
     }
 
 // factory callable by insurance company

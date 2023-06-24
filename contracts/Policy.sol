@@ -39,7 +39,7 @@ contract Policy {
 
     function _getReimbursementValue(uint _price, uint _BRMR, uint _reimburseSecu, uint _actNumber) public view returns (uint){
         require(block.timestamp > StartContract && block.timestamp <= EndContract, "not in time");
-        uint value = _BRMR * Policies[_actNumber];
+        uint value = _BRMR * Policies[_actNumber]/100;
         return value + _reimburseSecu < _price? value: _price - _reimburseSecu; 
     }
 
