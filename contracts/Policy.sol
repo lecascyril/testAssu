@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.20;
+pragma solidity 0.8.17;
 
 contract Policy {
 
@@ -56,11 +56,11 @@ contract Policy {
         emit ClientChanged(_clientsCode);
     }
 
-    function _getReimbursementValue(uint _price, uint _BRMR, uint _actNumber, uint _client) public view returns (uint){
+    function _getReimbursementValue(uint _price, uint _BRMR, uint _reimburseSecu, uint _actNumber, uint _client) public view returns (uint){
         require (Clients[_client]==true, "not a client");
         require(block.timestamp > StartContract && block.timestamp <= EndContract, "not in time");
         uint value = _BRMR * Policies[_actNumber];
-        return value < _price? value: _price;
+        return value + _reimburseSecu < _price? value: _price - _reimburseSecu; 
     }
 
 }

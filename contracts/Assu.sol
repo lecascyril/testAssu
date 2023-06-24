@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.20;
+pragma solidity 0.8.17;
 
 import "./Policy.sol";
 
@@ -11,9 +11,11 @@ contract Assu {
     mapping (uint => address) PoliciesUser; // for a user secu code return its policies;
     mapping (address => bool) PoliciesInAssu; // check if policies is by this assurance
 
-    constructor(){
+    event deposit(address whoDeposited, uint valueDeposited);
+
+    constructor(address secu){
         owner = msg.sender;
-        SECU = msg.sender;
+        SECU = secu;
     }
 
     modifier onlyOwner() {
@@ -42,11 +44,24 @@ contract Assu {
     }
 
 
-    function reimburseClient(uint _price, uint _BRMR, uint _actNumber, uint _clientsCode, address _pro) public onlySecu{
+    function reimburseClient(uint _price, uint _BRMR, uint _reimburseSecu, uint _actNumber, uint _clientsCode, address _pro) public onlySecu{
         address clientPolicy =  PoliciesUser[_clientsCode];
-        uint value = Policy(clientPolicy)._getReimbursementValue(_price, _BRMR, _actNumber, _clientsCode );
+        uint value = Policy(clientPolicy)._getReimbursementValue(_price, _BRMR, _reimburseSecu, _actNumber, _clientsCode );
         (bool success, )= _pro.call{value: value}("");
         require (success, "reimbursement impossible, call the assurance");
+    }
+
+    function depositCotisation() payable external{
+        emit deposit(msg.sender, msg.value);
+    }
+
+    function depositTreasury() payable external onlyOwner{
+        emit deposit(msg.sender, msg.value);
+    }
+
+    function withdraw() external onlyOwner{
+        (bool success, )= owner.call{value: address(this).balance}("");
+        require (success, "withdraw impossible");
     }
 
 }
