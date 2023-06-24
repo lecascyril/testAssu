@@ -22,6 +22,8 @@ contract Secu {
         SECU_ADDRESS=msg.sender;
     }
 
+// admin stuff
+
     function updatePro(address _proAddress, bool _isPro) public {
         require(msg.sender==SECU_ADDRESS, "you cant change pro status");
         isPro[_proAddress]=_isPro;
@@ -32,10 +34,26 @@ contract Secu {
         insuranceCompany[_assuAddress]=_isAssu;
     }
 
-    function updateUser(uint _clientsCode) public {
-        require (insuranceCompany[msg.sender]==true);
-        insuranceCompanyForUSer[_clientsCode]=msg.sender;
+    function updateUser(uint _clientsCode, address _newCompany) public {
+        require(msg.sender == SECU_ADDRESS || insuranceCompany[msg.sender]==true );
+        insuranceCompanyForUSer[_clientsCode]=_newCompany;
     }
+
+    function removeInsured(uint _secuCode) public {
+        require(msg.sender == SECU_ADDRESS || insuranceCompany[msg.sender]==true );
+        address oldAssuCompany=insuranceCompanyForUSer[_secuCode];
+        if(oldAssuCompany != address(0)){
+            address oldPolicy = Assu(oldAssuCompany).getPolicy(_secuCode);
+            Assu(oldAssuCompany).removeInsured(oldPolicy, _secuCode);
+        }
+    }
+
+    function modifySecuPolicies (uint _actNumber, uint[2] memory _policies)  public {
+        require(SECU_ADDRESS==msg.sender);
+        PoliciesBySecu[_actNumber] = _policies;
+    }
+
+// reimburse stuff
 
     function reimburseUser(uint _price, uint _actNumber, uint _clientsCode) public {
         require(isPro[msg.sender]==true, "you're not a pro");
@@ -61,11 +79,7 @@ contract Secu {
         Assu(insuranceCompanyUser).reimburseClient( _price, _BRMR, _reimburseSecu, _actNumber, _clientsCode, _proAddress);
     }
 
-    function modifyPolicies (uint _actNumber, uint[2] memory _policies)  public {
-        require(SECU_ADDRESS==msg.sender);
-        PoliciesBySecu[_actNumber] = _policies;
-    }
-
+// factory callable by insurance company
 
     function createPolicy(uint[] memory _actNumber, uint[] memory _policies, uint[] memory _clients) external returns (address) {
         require (insuranceCompany[msg.sender]==true);
@@ -76,7 +90,14 @@ contract Secu {
         assembly {
             policy := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
-        Policy(policy).initialyse(_actNumber, _policies, _clients, msg.sender);
+        Policy(policy).initialyse(_actNumber, _policies, msg.sender);
+
+        /* remove client to old contracts and link to new insurance company, useless with assu
+        for(uint i; i<_clients.length;i++){
+            removeInsured(_clients[i]);
+            insuranceCompanyForUSer[_clients[i]]= policy;
+        } */
+
         emit PolicyCreated(policy, msg.sender);
         return policy;
     }
