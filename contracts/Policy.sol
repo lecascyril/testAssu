@@ -32,15 +32,19 @@ contract Policy {
         INSURANCE_ADDRESS = _insuranceCompany;
     }
 
-    function _modifyPolicies (uint _actNumber, uint _policy) onlyInsurance public {
+    function _modifyPolicies (uint _actNumber, uint _policy) public onlyInsurance {
         Policies[_actNumber] = _policy;
         emit PoliciesChanged(block.timestamp, _actNumber);
     }
 
-    function _getReimbursementValue(uint _price, uint _BRMR, uint _reimburseSecu, uint _actNumber) public view returns (uint){
-        require(block.timestamp > StartContract && block.timestamp <= EndContract, "not in time");
-        uint value = _BRMR * Policies[_actNumber]/100;
-        return value + _reimburseSecu < _price? value: _price - _reimburseSecu; 
+    function _getReimbursementValue(uint _price, uint _BRMR, uint _reimburseSecu, uint _actNumber) public view onlyInsurance returns  (uint){
+        uint value = (_BRMR * Policies[_actNumber])/100;
+        if (value + _reimburseSecu < _price){
+            return value;
+        }
+        else{
+            return  (_price - _reimburseSecu);
+        }
     }
 
 }

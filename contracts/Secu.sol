@@ -4,7 +4,6 @@ pragma solidity 0.8.17;
 import "./Policy.sol";
 import "./Assu.sol";
 
-
 contract Secu {
 
     address SECU_ADDRESS;
@@ -58,25 +57,29 @@ contract Secu {
     function reimburseUser(uint _price, uint _actNumber, uint _clientsCode) public {
         require(isPro[msg.sender]==true, "you're not a pro");
         uint value= reimburseBySecu( _price, _actNumber, _clientsCode, msg.sender);
-        if(insuranceCompanyForUSer[_clientsCode]!=address(0) && _price-value > 0 ){
+        if(insuranceCompanyForUSer[_clientsCode]!=address(0) && _price > value ){
             reimburseByMutuelle( _price, PoliciesBySecu[_actNumber][0]-value, value, _actNumber, _clientsCode, msg.sender);
         }
     }
 
-    function reimburseBySecu(uint _price, uint _actNumber, uint _clientsCode, address _proAddress) private returns(uint){
-        uint value = PoliciesBySecu[_actNumber][0]*PoliciesBySecu[_actNumber][1]/100;
+    function reimburseBySecu(uint _price, uint _actNumber, uint _secuCode, address _proAddress) private returns(uint){
+        uint value = (PoliciesBySecu[_actNumber][0]*PoliciesBySecu[_actNumber][1])/100;
         if(_price < value){
             value = _price;
         }
         (bool success, )= _proAddress.call{value: value}("");
         require (success, "reimbursement impossible, call the secu");
-        emit reimbursedSecu(_clientsCode, value);
+        emit reimbursedSecu(_secuCode, value);
         return value;
     } 
 
-    function reimburseByMutuelle(uint _price, uint _BRMR, uint _reimburseSecu, uint _actNumber, uint _clientsCode, address _proAddress) private{
-        address insuranceCompanyUser = insuranceCompanyForUSer[_clientsCode];
-        Assu(insuranceCompanyUser).reimburseClient( _price, _BRMR, _reimburseSecu, _actNumber, _clientsCode, _proAddress);
+    function gettruc(uint _secuCode)public view returns(address){
+        return insuranceCompanyForUSer[_secuCode];
+    }
+
+    function reimburseByMutuelle(uint _price, uint _BRMR, uint _reimburseSecu, uint _actNumber, uint _secuCode, address _proAddress) private {
+        address insuranceCompanyUser = insuranceCompanyForUSer[_secuCode];
+        Assu(insuranceCompanyUser).reimburseInsured( _price, _BRMR, _reimburseSecu, _actNumber, _secuCode, _proAddress);
     }
 
     function addSecuTreasury() public payable{

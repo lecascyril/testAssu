@@ -41,8 +41,7 @@ contract Assu {
         _;
     }
 
-
-    function reimburseClient(uint _price, uint _BRMR, uint _reimburseSecu, uint _actNumber, uint _clientsCode, address _pro) public onlySecu{
+    function reimburseInsured(uint _price, uint _BRMR, uint _reimburseSecu, uint _actNumber, uint _clientsCode, address _pro) public onlySecu{
         address clientPolicy =  PoliciesUser[_clientsCode];
         uint value = Policy(clientPolicy)._getReimbursementValue(_price, _BRMR, _reimburseSecu, _actNumber );
         (bool success, )= _pro.call{value: value}("");
@@ -73,7 +72,7 @@ contract Assu {
     function addInsured (address _addr, uint _secuCode ) public onlyOwnerOuSecu{
         require(PoliciesInAssu[_addr]== true, "not a policy we have");
         Secu(SECU).removeInsured(_secuCode);
-        Secu(SECU).updateUser(_secuCode, msg.sender);
+        Secu(SECU).updateUser(_secuCode, address(this));
         PoliciesUser[_secuCode]=_addr;
         Insured[_secuCode]=true;
         emit InsuredChanged(_secuCode);    
