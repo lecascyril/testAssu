@@ -81,7 +81,7 @@ contract Secu {
 
 // factory callable by insurance company
 
-    function createPolicy(uint[] memory _actNumber, uint[] memory _policies, uint[] memory _clients) external returns (address) {
+    function createPolicy(uint[] memory _actNumber, uint[] memory _policies) external returns (address) {
         require (insuranceCompany[msg.sender]==true);
         address policy;
 

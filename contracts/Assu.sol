@@ -58,7 +58,7 @@ contract Assu {
 
 
     function createNewPolicyContract(uint[] memory _actNumber, uint[] memory _policies, uint[] memory _clients) external onlyOwner{
-        address newPolicy = Secu(SECU).createPolicy( _actNumber, _policies, _clients);
+        address newPolicy = Secu(SECU).createPolicy( _actNumber, _policies);
         PoliciesInAssu[newPolicy]=true;
         allPolicies.push(newPolicy);
 
