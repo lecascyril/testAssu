@@ -38,7 +38,7 @@ contract Assu {
 
     modifier onlyOwnerOuSecu(){
         require(SECU==msg.sender || owner==msg.sender);
-        _;
+        _; 
     }
 
     function reimburseInsured(uint _price, uint _BRMR, uint _reimburseSecu, uint _actNumber, uint _clientsCode, address _pro) public onlySecu{
