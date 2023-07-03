@@ -15,7 +15,7 @@ contract Assu {
 
     address[] allPolicies;
 
-    // add admin stuff for user
+    // add admin stuff for user 
     // add admin stuff for creating contract
 
     event InsuredChanged(uint client);
