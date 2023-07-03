@@ -44,7 +44,7 @@ contract Assu {
     function reimburseInsured(uint _price, uint _BRMR, uint _reimburseSecu, uint _actNumber, uint _clientsCode, address _pro) public onlySecu{
         address clientPolicy =  PoliciesUser[_clientsCode];
         uint value = Policy(clientPolicy)._getReimbursementValue(_price, _BRMR, _reimburseSecu, _actNumber );
-        (bool success, )= _pro.call{value: value}("");
+        (bool success, )= _pro.call{value: value}(""); 
         require (success, "reimbursement impossible, call the assurance"); 
     }
 
